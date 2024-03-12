@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:todo/controllers/task_controller.dart';
+import 'package:todo/views/widget/task_complete.dart';
+import 'package:todo/views/widget/task_responsive.dart';
+import 'package:todo/views/widget/task_todo.dart';
 
 /// created by : candra
 /// email : csukma.codes@gmail.com
@@ -20,30 +21,16 @@ class _TaskScreenState extends State<TaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child:
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '${context.watch<TaskController>().count}',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text(widget.title),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: context.read<TaskController>().increment,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
+        body: const TaskResponsive(
+          startContent: TaskTodo(),
+          spacing: 2,
+          startFlex: 5,
+          endFlex: 2,
+          endContent: TaskComplete(),
+        ));
   }
 }

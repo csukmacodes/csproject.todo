@@ -43,9 +43,8 @@ class TaskResponsive extends StatelessWidget {
           children: [
             Expanded(flex: startFlex, child: startContent),
             SizedBox(width: spacing),
-            endContent != null
-                ? Expanded(flex: endFlex, child: endContent!)
-                : Container(),
+            endContent != null ? VerticalDivider() : SizedBox(),
+            endContent != null ? Expanded(flex: endFlex, child: endContent!) : Container(),
           ],
         );
       } else {
@@ -56,9 +55,8 @@ class TaskResponsive extends StatelessWidget {
           children: [
             Expanded(flex: startFlex, child: startContent),
             SizedBox(height: spacing),
-            endContent != null
-                ? Expanded(flex: endFlex, child: endContent!)
-                : Container(),
+            endContent != null ? Divider() : SizedBox(),
+            endContent != null ? Expanded(flex: endFlex, child: endContent!) : SizedBox(),
           ],
         );
       }

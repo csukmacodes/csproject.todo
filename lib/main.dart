@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: TaskScreen(title: 'Todo List'),
+      home: TaskScreen(title: 'Todo'),
     );
   }
 }

@@ -17,6 +17,7 @@ class TaskItem extends StatelessWidget {
       required this.editController,
       this.onSubmit,
       this.onChange,
+      this.onRemove,
       this.editOnTap});
 
   final bool isDone;
@@ -28,6 +29,7 @@ class TaskItem extends StatelessWidget {
   final Function(String? val)? onSubmit;
   final Function(bool? val)? onChange;
   final VoidCallback? editOnTap;
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -41,14 +43,7 @@ class TaskItem extends StatelessWidget {
               )
             : Checkbox(value: checkVal, activeColor: Colors.green, onChanged: onChange),
         Expanded(child: _textItem()),
-        isDone
-            ? IconButton(
-                icon: const FaIcon(FontAwesomeIcons.trash),
-                iconSize: 20,
-                onPressed: () {
-                  print("Pressed");
-                })
-            : const SizedBox()
+        isDone ? IconButton(icon: const FaIcon(FontAwesomeIcons.trash), iconSize: 20, onPressed: onRemove) : const SizedBox()
       ],
     );
   }

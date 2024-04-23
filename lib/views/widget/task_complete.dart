@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:todo/utils/constant.dart';
+import 'package:provider/provider.dart';
+import 'package:todo/controllers/task_controller.dart';
 import 'package:todo/views/widget/task_item.dart';
 
 /// created by : candra
@@ -18,13 +17,25 @@ class TaskComplete extends StatefulWidget {
 }
 
 class _TaskCompleteState extends State<TaskComplete> {
-  late List<dynamic> jsonTodos;
+  TextEditingController editCtrl = TextEditingController();
+  bool isTaskLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    String sampleJsonString = jsonEncode(todoItems);
-    jsonTodos = jsonDecode(sampleJsonString).where((json) => json['completedTask'] == true).toList();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!isTaskLoaded) {
+      initTask();
+      isTaskLoaded = true;
+    }
+  }
+
+  void initTask() {
+    context.read<TaskController>().getTaskComplete();
   }
 
   @override
@@ -51,12 +62,17 @@ class _TaskCompleteState extends State<TaskComplete> {
             ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
-                itemCount: jsonTodos.length,
+                itemCount: context.watch<TaskController>().taskItemsComplete.length,
                 itemBuilder: (context, index) {
                   return TaskItem(
-                    editController: TextEditingController(),
-                    title: jsonTodos[index]['title'].toString(),
-                    isDone: jsonTodos[index]['completedTask'],
+                    title: context.watch<TaskController>().taskItemsComplete[index].title ?? '',
+                    isDone: context.watch<TaskController>().taskItemsComplete[index].completedTask ?? false,
+                    checkVal: context.watch<TaskController>().taskItemsComplete[index].completedTask ?? false,
+                    editController: editCtrl,
+                    onRemove: () {
+                      context.read<TaskController>().deleteTask(context.read<TaskController>().taskItemsComplete[index]);
+                      context.read<TaskController>().getTaskComplete();
+                    },
                   );
                 }),
           ],

@@ -1,9 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:todo/utils/constant.dart';
+import 'package:provider/provider.dart';
+import 'package:todo/controllers/task_controller.dart';
+import 'package:todo/models/entity/task_entity.dart';
 import 'package:todo/views/widget/task_item.dart';
 
 /// created by : candra
@@ -19,19 +19,26 @@ class TaskTodo extends StatefulWidget {
 }
 
 class _TaskTodoState extends State<TaskTodo> {
-  late List<dynamic> jsonTodos;
   TextEditingController editCtrl = TextEditingController();
   int activeIndex = -1;
+  bool isTaskLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    String sampleJsonString = jsonEncode(todoItems);
-    jsonTodos = jsonDecode(sampleJsonString).where((json) => json['completedTask'] == false).toList();
   }
 
-  void reloadTask() {
-    jsonTodos = jsonTodos.where((json) => json['completedTask'] == false).toList();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!isTaskLoaded) {
+      initTask();
+      isTaskLoaded = true;
+    }
+  }
+
+  void initTask() {
+    context.read<TaskController>().getTask();
   }
 
   @override
@@ -58,34 +65,34 @@ class _TaskTodoState extends State<TaskTodo> {
             ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
-                itemCount: jsonTodos.length,
+                itemCount: context.watch<TaskController>().taskItems.length,
                 itemBuilder: (context, index) {
                   return TaskItem(
-                    title: jsonTodos[index]['title'] ?? '',
-                    isDone: jsonTodos[index]['completedTask'],
-                    checkVal: jsonTodos[index]['completedTask'],
-                    // editTap: jsonTodos[index]['title'] == null || (editCtrl.value.text == jsonTodos[index]['title'] && activeIndex == index),
+                    title: context.watch<TaskController>().taskItems[index].title ?? '',
+                    isDone: context.watch<TaskController>().taskItems[index].completedTask ?? false,
+                    checkVal: context.watch<TaskController>().taskItems[index].completedTask ?? false,
                     editTap: activeIndex == index,
                     editController: editCtrl,
                     editOnTap: () {
                       setState(() {
                         activeIndex = index;
-                        editCtrl.text = jsonTodos[index]['title']??'';
+                        editCtrl.text = context.read<TaskController>().taskItems[index].title ?? '';
                       });
                     },
-                    onSubmit: (val) {
-                      setState(() {
-                        jsonTodos[index]['title'] = val;
-                        activeIndex = -1;
-                        editCtrl.clear();
-                        reloadTask();
-                      });
+                    onSubmit: (val) async {
+                      context.read<TaskController>().taskItems[index].title = val;
+                      activeIndex = -1;
+                      editCtrl.clear();
+                      context.read<TaskController>().addTask(context.read<TaskController>().taskItems[index]);
+                      context.read<TaskController>().getTaskComplete();
+                      context.read<TaskController>().getTask();
                     },
-                    onChange: (val) {
-                      setState(() {
-                        jsonTodos[index]['completedTask'] = val;
-                        reloadTask();
-                      });
+                    onChange: (val) async {
+                      context.read<TaskController>().taskItems[index].completedTask = val;
+
+                      context.read<TaskController>().addTask(context.read<TaskController>().taskItems[index]);
+                      context.read<TaskController>().getTaskComplete();
+                      context.read<TaskController>().getTask();
                     },
                   );
                 }),
@@ -95,15 +102,12 @@ class _TaskTodoState extends State<TaskTodo> {
                     icon: const FaIcon(FontAwesomeIcons.plus),
                     iconSize: 20,
                     onPressed: () {
-                      Map<String, dynamic> item = Map();
-                      item.putIfAbsent('title', () => null);
-                      item.putIfAbsent('completedTask', () => false);
-                      item.putIfAbsent('timestamps', () => DateTime.now().second);
-                      if (jsonTodos[jsonTodos.length - 1]['title'] != null) {
-                        setState(() {
-                          jsonTodos.add(item);
-                        });
-                      }
+                      TaskEntity item = TaskEntity();
+                      item.title = null;
+                      item.completedTask = false;
+                      item.timestamps = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+                      context.read<TaskController>().addTask(item);
+                      context.read<TaskController>().getTask();
                     }),
                 Expanded(
                     child: Text(
